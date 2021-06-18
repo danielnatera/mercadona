@@ -1,9 +1,11 @@
-import React from 'react'
+import React, {useContext} from 'react'
 import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon, StarIcon, ShoppingCartIcon, UserIcon} from '@heroicons/react/outline'
 import Link from 'next/link'
 import {useRouter} from 'next/router'
+import {DataContext} from '../store/GlobalState'
+import Cookie from 'js-cookie'
 
 const navigation = [
     { name: 'Inicio', href: 'http://localhost:3000/', current: true },
@@ -16,6 +18,8 @@ const navigation = [
 export default function NavBar() {
 
     const router = useRouter();
+    const {state, dispatch} = useContext(DataContext)
+    const{auth} = state 
     const isActive = (r) =>  {
       if(r === router.pathname){
         return " active";
@@ -24,6 +28,90 @@ export default function NavBar() {
       }
     }
 
+
+    const handleLogout = () => {
+      Cookie.remove('refreshtoken', {path: 'api/auth/accessToken'})
+      localStorage.removeItem('firstLogin')
+      dispatch({type:'AUTH', payload: {}})
+      dispatch({type:'NOTIFY', payload: {success: 'Te has desconectado'}})
+    }
+
+    const loggedRouter = () => {
+      return( 
+      <Menu as="div" className="ml-3 relative">
+      {({ open }) => (
+        <>
+          <div>
+            <Menu.Button className="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+              <span className="sr-only">Open user menu</span>
+              <img
+                className="h-8 w-8 rounded-full"
+                src="https://res.cloudinary.com/ddzcnvofd/image/upload/v1623612095/Josuke_usx65h.jpg"
+                alt=""
+              />
+            </Menu.Button>
+          </div>
+          <Transition
+            show={open}
+            as={Fragment}
+            enter="transition ease-out duration-100"
+            enterFrom="transform opacity-0 scale-95"
+            enterTo="transform opacity-100 scale-100"
+            leave="transition ease-in duration-75"
+            leaveFrom="transform opacity-100 scale-100"
+            leaveTo="transform opacity-0 scale-95"
+          >
+            <Menu.Items
+              static
+              className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+            >
+              <Menu.Item>
+                {({ active }) => (
+                  <a
+                    href="#"
+                    className={classNames(
+                      active ? 'bg-gray-100' : '',
+                      'block px-4 py-2 text-sm text-gray-700'
+                    )}
+                  >
+                    {auth.user.name}
+                  </a>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }) => (
+                  <a
+                    href="#"
+                    className={classNames(
+                      active ? 'bg-gray-100' : '',
+                      'block px-4 py-2 text-sm text-gray-700'
+                    )}
+                  >
+                    Opciones
+                  </a>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                
+                {({ active }) => (
+                  <button
+                    onClick={handleLogout}
+                    className={classNames(
+                      active ? 'bg-gray-100' : '',
+                      'block px-4 py-2 text-sm text-gray-700'
+                    )}
+                  >
+                    Desconectarse
+                  </button>
+                )}
+              </Menu.Item>
+            </Menu.Items>
+          </Transition>
+        </>
+      )}
+    </Menu>
+    )
+    }
     return (
         <Disclosure as="nav" className="bg-gray-800">
         {({ open }) => (
@@ -74,11 +162,18 @@ export default function NavBar() {
                 </div>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                   
-                  <Link href="/SignIn">
-                  <button className={"bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white mx-1" + isActive('/SignIn')}>
-                  <UserIcon className="h-6 w-6" aria-hidden="true" />
-                  </button>
-                  </Link>          
+                  
+                {
+                    Object.keys(auth).length === 0 
+                    ? <Link href="/SignIn">
+                    <button className={"bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white mx-1" + isActive('/SignIn')}>
+                    <UserIcon className="h-6 w-6" aria-hidden="true" />
+                    </button>
+                    </Link>   
+
+                    : loggedRouter()
+                  }
+       
 
                   <Link href="/product">
                   <button className={"bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white mx-1" + isActive('/product')}>
@@ -92,77 +187,7 @@ export default function NavBar() {
                   </button>
                   </Link>
                   {/* Profile dropdown */}
-                  <Menu as="div" className="ml-3 relative">
-                    {({ open }) => (
-                      <>
-                        <div>
-                          <Menu.Button className="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-                            <span className="sr-only">Open user menu</span>
-                            <img
-                              className="h-8 w-8 rounded-full"
-                              src="https://res.cloudinary.com/ddzcnvofd/image/upload/v1623612095/Josuke_usx65h.jpg"
-                              alt=""
-                            />
-                          </Menu.Button>
-                        </div>
-                        <Transition
-                          show={open}
-                          as={Fragment}
-                          enter="transition ease-out duration-100"
-                          enterFrom="transform opacity-0 scale-95"
-                          enterTo="transform opacity-100 scale-100"
-                          leave="transition ease-in duration-75"
-                          leaveFrom="transform opacity-100 scale-100"
-                          leaveTo="transform opacity-0 scale-95"
-                        >
-                          <Menu.Items
-                            static
-                            className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
-                          >
-                            <Menu.Item>
-                              {({ active }) => (
-                                <a
-                                  href="#"
-                                  className={classNames(
-                                    active ? 'bg-gray-100' : '',
-                                    'block px-4 py-2 text-sm text-gray-700'
-                                  )}
-                                >
-                                  Perfil
-                                </a>
-                              )}
-                            </Menu.Item>
-                            <Menu.Item>
-                              {({ active }) => (
-                                <a
-                                  href="#"
-                                  className={classNames(
-                                    active ? 'bg-gray-100' : '',
-                                    'block px-4 py-2 text-sm text-gray-700'
-                                  )}
-                                >
-                                  Opciones
-                                </a>
-                              )}
-                            </Menu.Item>
-                            <Menu.Item>
-                              {({ active }) => (
-                                <a
-                                  href="#"
-                                  className={classNames(
-                                    active ? 'bg-gray-100' : '',
-                                    'block px-4 py-2 text-sm text-gray-700'
-                                  )}
-                                >
-                                  Desconectarse
-                                </a>
-                              )}
-                            </Menu.Item>
-                          </Menu.Items>
-                        </Transition>
-                      </>
-                    )}
-                  </Menu>
+                 
                 </div>
               </div>
             </div>

@@ -12,6 +12,7 @@ const SignIn = () => {
   const { email, password } = userData
 
   const {state, dispatch} = useContext(DataContext)
+  const {auth} = state
 
   const router = useRouter()
 
@@ -42,6 +43,10 @@ const SignIn = () => {
     })
     localStorage.setItem('firstLogin', true)
   }
+
+    useEffect( () =>{
+      if(Object.keys(auth).length !== 0) router.push("/")
+    }, [auth])
 
     return(
         <div>

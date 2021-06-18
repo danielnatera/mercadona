@@ -8,6 +8,7 @@ const Home = () => {
       <Head>
         <title> Mercadillo</title>
       </Head>
+     <img src="https://res.cloudinary.com/ddzcnvofd/image/upload/v1623993824/meme_wc2gew.png" className="mx-80 p-20" />
     </div>
   )
 }
